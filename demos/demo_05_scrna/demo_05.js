@@ -2,9 +2,10 @@ var VSHADER_SOURCE =
   'attribute float a_Size; \n' +
   'attribute vec4 a_Position; \n' +
   'attribute vec4 a_Color; \n' + 
+  'uniform mat4 u_ModelMatrix; \n' +
   'varying vec4 v_Color; \n' + // DEFINE A VARYING COLOR THAT CHANGES WITH EACH VERTEX
   ' void main() {\n' +
-  '  gl_Position = a_Position;\n' + 
+  '  gl_Position = u_ModelMatrix * a_Position;\n' + 
   '  gl_PointSize = a_Size;\n' +
   '  v_Color = a_Color; \n' + 
   '}\n';
@@ -43,6 +44,7 @@ var FSHADER_SOURCE =
   var a_PointSize = gl.getAttribLocation(gl.program, 'a_Size'); // point size
   var a_Position = gl.getAttribLocation(gl.program, 'a_Position') // point position
   var u_PointColor = gl.getUniformLocation(gl.program, 'u_PointColor');
+  var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
   var a_Color = gl.getAttribLocation(gl.program, 'a_Color');
   gl.uniform4f(u_PointColor, 1, 0, 0, 1);
   gl.vertexAttrib1f(a_PointSize, 2);
@@ -56,12 +58,17 @@ var FSHADER_SOURCE =
     size: 3,
     positions: new Float32Array([]),
     colors: new Float32Array([]),
-    numPoint: 0
+    numPoint: 0,
+    scaleX:0,
+    scaleY:0,
+    offsetX: 0,
+    offsetY:0
   }
   // shallow copy of scene state
   let prevSceneData = {...sceneData};
   sceneData.positions = new Float32Array([0.0,0.0, -0.5,0.5, 0.5,-0.5]);
   sceneData.colors = new Float32Array([1.0,0.0,0.0, 1.0,0.0,0.0, 1.0,0.0,0.0]);
+  sceneData.scale = 1;
 
 
   // pass positions
@@ -73,11 +80,21 @@ var FSHADER_SOURCE =
 
   }
 
+  // pass colors
   const passColors = (data)=>{
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
     gl.vertexAttribPointer(a_Color, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(a_Color);
+  }
+
+  // pass model matrix value
+  const passModel = (scaleX, scaleY, offsetX, offsetY) => {
+    var modelMatrix = new Matrix4();
+    modelMatrix.setIdentity();
+    modelMatrix.setScale(scaleX, scaleY, 1.0);
+    modelMatrix.translate(offsetX, offsetY, 0.0);
+    gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
   }
 
   
@@ -101,8 +118,10 @@ var FSHADER_SOURCE =
       passColors(sceneData.colors)
     }
 
+    // MODEL Matrix (treat all coordinates as if they are one geometry!)
+    passModel(sceneData.scaleX, sceneData.scaleY, sceneData.offsetX, sceneData.offsetY);
     
-    
+
     // Draw all points
     gl.drawArrays(gl.POINTS, 0, sceneData.numPoint);
 
@@ -136,14 +155,43 @@ var FSHADER_SOURCE =
   fetch('../../data/10x_pbmc3k.txt').then((r)=>{
     return r.arrayBuffer();
   }).then((buffer)=>{
-    sceneData.positions = new Float32Array(buffer).map(x=>x/25.0);
+    // sceneData.positions = new Float32Array(buffer).map(x=>x/25.0);
+    // sceneData.numPoint = sceneData.positions.length/2;
+    sceneData.positions = new Float32Array(buffer);
     sceneData.numPoint = sceneData.positions.length/2;
+    sceneData.scaleX = 1/20.0;
+    sceneData.scaleY = 1/20.0;
 
     // randomly assign color keys to each vertex
     const colorKeysPerVertex = Array(sceneData.numPoint).fill(0).map((x)=>Math.random()>0.5?1:0);
     sceneData.colors = createColorsFromIndex(colorKeysPerVertex);
   });
 
+
+  // Graphical User Interface
+  {
+    var gui = new lil.GUI();
+
+    let modelParams = {
+      offsetX:0,
+      offsetY:0,
+      scale: 10,
+    }
+
+    // control offset
+    gui.add(modelParams, 'offsetX', -10, 10, 0.25).onChange(value=>{
+      sceneData.offsetX = value;
+    });
+    gui.add(modelParams, 'offsetY', -10, 10, 0.25).onChange(value=>{
+      sceneData.offsetY = value;
+    });
+
+    gui.add(modelParams, 'scale', 1, 30, 1).onChange(value=>{
+      sceneData.scaleX = 1/(30-value);
+      sceneData.scaleY = 1/(30-value);
+    });
+  }
+  
 
 }
 
