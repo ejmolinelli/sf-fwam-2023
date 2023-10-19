@@ -137,17 +137,41 @@ var FSHADER_SOURCE =
   }
   onTick();
 
+  const createColorsFromIndex = (clusterKeys, colors) =>{
+    // #HARDCODED: number of final colors/clusters
+    const MAX_COLORS = 60;
+    const COUNT_COLORS = colors.length;
+    const nBetween = MAX_COLORS/(COUNT_COLORS-1);
 
-  const colorMap = new Map([
-    [0, [1.0, 0.0, 0.0]], // red
-    [1, [0.0, 1.0, 0.0]] // green
-  ])
+    // create iterable of "category", "vec3(color)" pairs
+    const catColors = Array(MAX_COLORS).fill(0).map((_,i)=>{
+      console.log(i);
+      const frac = i/nBetween;
+      // const lowerColor = d3.color(colors[Math.floor(frac)]).rgb();
+      // const upperColor = d3.color(colors[Math.ceil(frac)]).rgb();
+      const rfrac1 = Math.floor(Math.random()*(COUNT_COLORS-1))
+      const rfrac2 = Math.floor(Math.random()*(COUNT_COLORS-1))
+      const lowerColor = d3.color(colors[rfrac1]).rgb();
+      const upperColor = d3.color(colors[rfrac2]).rgb();
+      
+      // categorical color
+      const interpRatio = (i%nBetween)/nBetween;
+      const cc = d3.color(d3.interpolateRgb(lowerColor,upperColor)(interpRatio)).rgb();
+      const vec3Color = [cc.r/255.0, cc.g/255.0, cc.b/255.0];
+      return [i, vec3Color];
+    })
 
-  const createColorsFromIndex = (indexValues) =>{
-    const colorsArray = new Float32Array(indexValues.length*3);
-    indexValues.forEach((key, idx)=>{
-      const startIndex = idx*3;
-      colorsArray.set(colorMap.get(key), startIndex);
+    // create colormap (primary palette colors)
+    const colorMap = new Map(catColors);
+
+    // initialize array to buffer to color attribute
+    const colorsArray = new Float32Array(clusterKeys.length*3);
+
+    // map cluster to color
+    clusterKeys.forEach((key, idx)=>{
+      // start index in full array
+      colorsArray.set(colorMap.get(key-1), idx*3);
+      // colorsArray.set([1.0, 0.0, 0.0], idx*3);
     });
     return colorsArray
   }
@@ -160,21 +184,24 @@ var FSHADER_SOURCE =
     sceneData.scaleY = 1/(scaleMax-scaleFactor);
   }
 
-  fetch('../../data/10x_E18_C57BL_6.txt').then((r)=>{
-    return r.arrayBuffer();
-  }).then((buffer)=>{
-    // sceneData.positions = new Float32Array(buffer).map(x=>x/25.0);
-    // sceneData.numPoint = sceneData.positions.length/2;
-    sceneData.positions = new Float32Array(buffer);
+  const promCoords = fetch('../../data/10x_E18_C57BL_6.txt').then((r)=>r.arrayBuffer());
+  const promCluster = fetch('../../data/10x_E18_C57BL_6_cluster.txt').then((r)=>r.arrayBuffer());
+  const promColors = fetch('../../data/colors.json').then((r)=>r.json())
+
+  Promise.all([promCoords,promCluster, promColors]).then((result)=>{
+    // unpack coordinates
+    sceneData.positions = new Float32Array(result[0]);
+
+    // unpack cluster assignments
+    const clusters = new Uint8Array(result[1]);
+    const colors = result[2].colors.map(c=>c.value); // ["rgba(...)", "rgba(...)"]
+    sceneData.colors = createColorsFromIndex(clusters, colors); // Float32Array([r1,g1,b1, r2,g2,b2])
+
+    // appy scale factor
+    applyScaleFactor(initScaleFactor);
     sceneData.numPoint = sceneData.positions.length/2;
-
-    
-    applyScaleFactor(initScaleFactor)
-
-    // randomly assign color keys to each vertex
-    const colorKeysPerVertex = Array(sceneData.numPoint).fill(0).map((x)=>Math.random()>0.5?1:0);
-    sceneData.colors = createColorsFromIndex(colorKeysPerVertex);
   });
+
 
 
   // Graphical User Interface
