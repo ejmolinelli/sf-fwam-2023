@@ -47,9 +47,10 @@ function main() {
   }
   
   // # initialize color
+  var u_PointColor;
   {
     // step 1 - get storage location (in memory)
-    var u_PointColor = gl.getUniformLocation(gl.program, 
+    u_PointColor = gl.getUniformLocation(gl.program, 
         'u_PointColor');
 
     // step 2 - assign a value to the uniform variable
@@ -126,7 +127,7 @@ function main() {
  
 
   // draw
-  const draw = (gl, clear) => {
+  const draw = (gl, clear, elapsed) => {
     // Specify the color for clearing <canvas>
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
@@ -134,7 +135,7 @@ function main() {
     if (clear){
       gl.clear(gl.COLOR_BUFFER_BIT);
     }
-    
+    updateColor(gl, u_PointColor, elapsed)
     // Draw all points
     gl.drawArrays(gl.POINTS, 0, 1_000);
   }
@@ -144,9 +145,12 @@ function main() {
 
   const prev = Date.now();
   const onTick = ()=>{
+    const now = Date.now();
+    const elapsed = now - prev;
+    
     // update position and size
     gl.vertexAttrib1f(a_PointSize, 3);
-    draw(gl, true);
+    draw(gl, true, elapsed);
 
     // only returns when this tab is active
     // and ready to draw!!
