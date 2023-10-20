@@ -1,4 +1,3 @@
-// HelloPoint1.js (c) 2012 matsuda
 // Vertex shader program
 var VSHADER_SOURCE = 
   'void main() {\n' +

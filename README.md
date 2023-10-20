@@ -76,6 +76,7 @@ $ http-server -p 5500
 
 
 # Demos
+The purpose of these demos is to give a progressive and iterative walkthrough of simple programs building up to a more complex visualization. The learning objective is to focus on the primary graphics pipeline of (a) writing shader programs and (b) passing data to the shader programs during animation. Other parts of the necessary setup are abstracted into convenience packages provided by the authors of the `WebGL:Programming Guide` book. 
 
 ### Demo 01 - Single point
 
