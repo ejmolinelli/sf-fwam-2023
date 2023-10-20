@@ -73,3 +73,17 @@ $ python -m SimpleHTTPServer 5500
 $ npm install http-server -g
 $ http-server -p 5500
 ```
+
+
+# Demos
+
+### Demo 01 - Single point
+
+### Demo 02 - Customize size and color
+
+### Demo 03 - Drawing many elements
+
+### Demo 04 - Fancy Fragment Shader
+
+### Demo 05 - Adding interactivity
+
