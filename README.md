@@ -1,24 +1,4 @@
-<style>
 
-    .cards {
-        display: flex;
-        flex-direction:row;
-        width: 100%;
-        justify-content: flex-start;
-        align-items: center;
-    }
-
-    .card {
-        border-radius: 10px;
-        width: 1fr;
-        min-width: 100px;
-        max-width: 200px;
-        min-height: 100px;
-        background: gray;
-        margin: 20px;
-
-    }
-</style>
 
 # WebGL workshop
 This is the accompanying repository for a beginner oriented workshop on using WebGL for scientific data visualization. The end result  will be an interactive rendering of 1.5 datapoints on a 2D plain.
