@@ -47,7 +47,7 @@ var FSHADER_SOURCE =
   var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
   var a_Color = gl.getAttribLocation(gl.program, 'a_Color');
   gl.uniform4f(u_PointColor, 1, 0, 0, 1);
-  gl.vertexAttrib1f(a_PointSize, 0.1);
+  gl.vertexAttrib1f(a_PointSize, 0.5);
 
 
   var positionBuffer = gl.createBuffer();
@@ -171,7 +171,6 @@ var FSHADER_SOURCE =
     clusterKeys.forEach((key, idx)=>{
       // start index in full array
       colorsArray.set(colorMap.get(key-1), idx*3);
-      // colorsArray.set([1.0, 0.0, 0.0], idx*3);
     });
     return colorsArray
   }
