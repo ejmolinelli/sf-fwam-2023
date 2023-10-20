@@ -45,11 +45,11 @@ function main() {
   
 
   // update the size attribute depending on time elapsed (in ms)
-  const updateSize = (gl, sizeLocation, elapsed) => {
+  const updateSize = (gl, size_ptr, elapsed) => {
     // convert to seconds
     elapsed /= 1000;
     const duration = 5;
-    gl.vertexAttrib1f(a_PointSize, Math.min(1,(elapsed/duration))*300);
+    gl.vertexAttrib1f(size_ptr, Math.min(1,(elapsed/duration))*300);
 
   }
 
