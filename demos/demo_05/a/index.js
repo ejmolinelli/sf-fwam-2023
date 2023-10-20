@@ -2,8 +2,8 @@ var VSHADER_SOURCE =
   'attribute float a_Size; \n' +
   'attribute vec4 a_Position; \n' +
   'attribute vec4 a_Color; \n' + 
-  'uniform mat4 u_ModelMatrix; \n' +
-  'varying vec4 v_Color; \n' + // DEFINE A VARYING COLOR THAT CHANGES WITH EACH VERTEX
+  'uniform mat4 u_ModelMatrix; \n' +              // NEW: Multiply by model  matrix to center and scale
+  'varying vec4 v_Color; \n' +                    // NEW: Use a varying variable to store information that CHANGES with each vertex
   ' void main() {\n' +
   '  gl_Position = u_ModelMatrix * a_Position;\n' + 
   '  gl_PointSize = a_Size;\n' +
@@ -14,9 +14,9 @@ var VSHADER_SOURCE =
 var FSHADER_SOURCE =
   'precision mediump float; \n' +
   'uniform vec4 u_PointColor; \n' +
-  'varying vec4 v_Color; \n' + 
+  'varying vec4 v_Color; \n' +                    // NEW: Connect to v_Color passed by vertex shader
   'void main() {\n' +
-  '  gl_FragColor = v_Color;\n' + // Set the point color
+  '  gl_FragColor = v_Color;\n' + 
   '}\n';
 
   function main() {
